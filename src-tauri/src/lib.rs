@@ -14,6 +14,7 @@ pub mod modules;
 
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_global_shortcut::ShortcutState;
+use tauri_plugin_updater::UpdaterExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -57,17 +58,20 @@ pub fn run() {
                     Code::KeyU,
                 );
 
-                app.handle().plugin(
+                let app_handle_for_shortcut = app.handle();
+                app_handle_for_shortcut.plugin(
                     tauri_plugin_global_shortcut::Builder::new()
-                        .with_handler(move |app_handle, shortcut, event| match shortcut {
-                            s if s == &app_update_shortcut => {
-                                if event.state() == ShortcutState::Pressed {
-                                    println!("Update shortcut pressed");
-                                    update_to_latest_version(app_handle.clone());
+                        .with_handler({
+                            let app_update_shortcut = app_update_shortcut.clone();
+                            move |app_handle, shortcut, _event| {
+                                if shortcut == &app_update_shortcut {
+                                    let handle = app_handle.clone();
+                                    tauri::async_runtime::spawn(async move {
+                                        update_to_latest_version(handle).await.unwrap();
+                                    });
+                                } else {
+                                    println!("Unhandled shortcut: {:?}", shortcut);
                                 }
-                            }
-                            _ => {
-                                println!("Unhandled shortcut: {:?}", shortcut);
                             }
                         })
                         .build(),
