@@ -3,7 +3,7 @@ name: App Builder
 on:
   push:
     branches:
-      - 'tauri'
+      - 'release'
   workflow_dispatch:
 
 jobs:
