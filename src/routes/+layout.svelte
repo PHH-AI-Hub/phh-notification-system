@@ -3,29 +3,46 @@
 	import { onMount } from 'svelte';
 	import '../app.css';
 	import { createDatabase } from '$lib/util/tauri/sql.util';
-	import { getAppDataDir } from '$lib/store/startup/get.startup.svelte';
+	import {
+		getAppDataDir,
+		getDeviceInformation
+	} from '$lib/store/startup/get.startup.svelte';
+	import { getTokenRequestSocket } from '$lib/store/socket/token-request.socket.svelte';
+	import type { Socket } from 'socket.io-client';
 
 	let { children } = $props();
 
+	let tokenRequestSocket: Socket | null = $state(null);
+
 	// Initialize Services
 	onMount(async () => {
-		// Store / Startup
-		await getAppDataDir();
-		// Util / Tauri /SQL
-		await createDatabase();
+		try {
+			await getAppDataDir();
 
-		// Util / Tauri / Socket
+			await getDeviceInformation();
 
-		// Util / Tauri / Stronghold
+			try {
+				await createDatabase();
+			} catch (error) {
+				console.error('Error creating database:', error);
+			}
 
-		// Util / Tauri /Http
-
+			// Socket Init
+			tokenRequestSocket = await getTokenRequestSocket(
+				'/emr-notification-system-token-request'
+			);
+			if (tokenRequestSocket && !tokenRequestSocket.connected) {
+				tokenRequestSocket.connect();
+			}
+		} catch (error) {
+			console.error('Error during onMount initialization:', error);
+		}
 	});
 </script>
 
 <div class="flex h-screen w-screen flex-grow flex-col overflow-hidden">
 	<section class="flex-shrink">
-		<AppToolBar />
+		<AppToolBar {tokenRequestSocket} />
 	</section>
 	<main class=" flex-grow">
 		{@render children()}

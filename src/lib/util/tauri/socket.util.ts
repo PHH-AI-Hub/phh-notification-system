@@ -1,16 +1,11 @@
-import { BACKEND_URL, BACKEND_PORT } from '$lib/env/app.env';
 import { io, Socket } from 'socket.io-client';
-
-export function getWebSocketUrl(): string {
-	return `http://${BACKEND_URL}:${BACKEND_PORT}`;
-}
+import { BACKEND_URL } from '$env/static/private';
 
 export async function connectWebSocket(namespace?: string): Promise<Socket> {
 	try {
-		const url = getWebSocketUrl();
-		const fullUrl = namespace ? `${url}/${namespace}` : url;
+		const url = `${BACKEND_URL}${namespace}`;
 
-		const socket = io(fullUrl, {
+		const socket = io(url, {
 			transports: ['websocket'],
 			reconnection: true,
 			reconnectionAttempts: 5,

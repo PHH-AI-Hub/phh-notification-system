@@ -1,4 +1,4 @@
-export interface DeviceInformation {
+export interface DeviceInformationInterface {
 	arch?: string;
 	exe_extension?: string;
 	family?: string;

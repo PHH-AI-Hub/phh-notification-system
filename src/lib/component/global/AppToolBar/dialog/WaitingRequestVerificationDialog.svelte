@@ -1,10 +1,13 @@
 <script lang="ts">
-	import type { DeviceInformation } from '$lib/model/interface/device-information.interface';
+	import type { SystemInformationInterface } from '$lib/model/interface/system-information.interface';
+	import { deviceInformationState } from '$lib/store/state/device-information.state.svelte';
 	import * as CryptoJS from 'crypto-js';
+	import { Socket } from 'socket.io-client';
 	import { onMount } from 'svelte';
 
-	let { deviceInformation, onClose } = $props<{
-		deviceInformation: DeviceInformation | undefined;
+	let { tokenRequestSocket, systemInformation, onClose } = $props<{
+		tokenRequestSocket: Socket;
+		systemInformation: SystemInformationInterface | undefined;
 		onClose: () => void;
 	}>();
 
@@ -13,12 +16,15 @@
 	let identifierKeyChip: string[] = $state([]);
 
 	onMount(() => {
-		identifierKey = CryptoJS.SHA256(deviceInformation.hostname).toString(
-			CryptoJS.enc.Hex
-		);
+		if (!deviceInformationState.deviceInformation?.hostname) {
+			return;
+		}
+		identifierKey = CryptoJS.SHA256(
+			deviceInformationState.deviceInformation?.hostname
+		).toString(CryptoJS.enc.Hex);
 		identifierKeyChip = splitIdentifierKey(identifierKey);
-		sendDeviceVerificationRequest(identifierKey);
 		countDownAbortRequest();
+		sendDeviceVerificationRequest(identifierKey);
 	});
 
 	function splitIdentifierKey(key: string): string[] {
@@ -34,13 +40,29 @@
 
 	function sendDeviceVerificationRequest(identifierKey: string) {
 		const request = {
-			arch: deviceInformation.arch,
-			hostname: deviceInformation.hostname,
-			family: deviceInformation.family,
-			version: deviceInformation.version,
-			identifier_key: identifierKey
+			arch: deviceInformationState.deviceInformation?.arch,
+			exe_extension: deviceInformationState.deviceInformation?.exe_extension,
+			family: deviceInformationState.deviceInformation?.family,
+			hostname: deviceInformationState.deviceInformation?.hostname,
+			locale: deviceInformationState.deviceInformation?.locale,
+			platform: deviceInformationState.deviceInformation?.platform,
+			version: deviceInformationState.deviceInformation?.version,
+			username: deviceInformationState.deviceInformation?.username,
+			cpu: systemInformation.cpu,
+			global_cpu_usage: systemInformation.global_cpu_usage,
+			available_memory: systemInformation.available_memory,
+			total_memory: systemInformation.total_memory,
+			used_memory: systemInformation.used_memory,
+			free_swap: systemInformation.free_swap,
+			total_swap: systemInformation.total_swap,
+			used_swap: systemInformation.used_swap,
+			processes: systemInformation.processes,
+			free_memory: systemInformation.free_memory,
+			device_id: identifierKey,
+			is_verified: false,
+			name: 'zarnihlawn'
 		};
-		// postDeviceScrape(request);
+		tokenRequestSocket.emit('token-request', request);
 	}
 
 	function countDownAbortRequest() {
@@ -51,7 +73,16 @@
 		}, 1000);
 	}
 
+	function abortDeviceVerificationRequest() {
+		tokenRequestSocket.emit('abort-token-request', {
+			device_id: identifierKey
+		});
+	}
+
 	function handleClose() {
+		try {
+			abortDeviceVerificationRequest();
+		} catch (e) {}
 		onClose();
 	}
 </script>
@@ -62,7 +93,7 @@
 
 		<div class="my-1 flex flex-1 flex-col gap-10 overflow-y-auto py-3">
 			<div>
-				{#if deviceInformation}
+				{#if deviceInformationState?.deviceInformation}
 					<div
 						class="rounded-box border-base-content/5 bg-base-100 overflow-x-auto border"
 					>
@@ -80,30 +111,30 @@
 								<tr>
 									<th>1</th>
 									<td>Arch</td>
-									<td>{deviceInformation.arch}</td>
+									<td>{deviceInformationState.deviceInformation.arch}</td>
 								</tr>
 								<!-- row 2 -->
 								<tr>
 									<th>2</th>
 									<td>Username</td>
-									<td>{deviceInformation.username}</td>
+									<td>{deviceInformationState.deviceInformation.username}</td>
 								</tr>
 
 								<tr>
 									<th>3</th>
 									<td>Hostname</td>
-									<td>{deviceInformation.hostname}</td>
+									<td>{deviceInformationState.deviceInformation.hostname}</td>
 								</tr>
 								<!-- row 3 -->
 								<tr>
 									<th>4</th>
 									<td>Family</td>
-									<td>{deviceInformation.family}</td>
+									<td>{deviceInformationState.deviceInformation.family}</td>
 								</tr>
 								<tr>
 									<th>5</th>
 									<td>Version</td>
-									<td>{deviceInformation.version}</td>
+									<td>{deviceInformationState.deviceInformation.version}</td>
 								</tr>
 							</tbody>
 						</table>

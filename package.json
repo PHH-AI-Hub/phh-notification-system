@@ -29,6 +29,7 @@
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/svelte": "^5.2.4",
 		"@types/crypto-js": "^4.2.2",
+		"@types/node": "^22.15.21",
 		"@types/socket.io-client": "^3.0.0",
 		"daisyui": "^5.0.35",
 		"eslint": "^9.18.0",

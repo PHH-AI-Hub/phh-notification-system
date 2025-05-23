@@ -4,21 +4,27 @@
 	import WaitingRequestVerificationDialog from './dialog/WaitingRequestVerificationDialog.svelte';
 	import SunnyWebp from '$lib/asset/image/webp/sunny.webp';
 	import { onMount } from 'svelte';
-	import type { DeviceInformation } from '$lib/model/interface/device-information.interface';
 	import {
-		getApplicationVersion,
-		getDeviceInformation
+		invokeApplicationVersion,
+		invokeSystemInformation
 	} from '$lib/util/tauri/information.util';
+	import type { SystemInformationInterface } from '$lib/model/interface/system-information.interface';
+	import type { Socket } from 'socket.io-client';
+	import { scale } from 'svelte/transition';
 
 	let showConfirmRequestVerificationDialog: boolean = $state(false);
 	let showWaitingRequestVerificationDialog: boolean = $state(false);
 
 	let applicationVersion: string = $state('');
-	let deviceInformation: DeviceInformation | undefined = $state();
+	let systemInformation: SystemInformationInterface | undefined = $state();
+
+	let { tokenRequestSocket } = $props<{
+		tokenRequestSocket: Socket | null;
+	}>();
 
 	onMount(async () => {
-		applicationVersion = await getApplicationVersion();
-		deviceInformation = await getDeviceInformation();
+		applicationVersion = await invokeApplicationVersion();
+		systemInformation = await invokeSystemInformation();
 	});
 
 	function handleVerifyOnClick() {
@@ -46,7 +52,7 @@
 		<div class="indicator">
 			<span class="indicator-item status status-error animate-ping"></span>
 			<span class="indicator-item status status-error"></span>
-			<button>
+			<button class="cursor-pointer">
 				<LucideBell />
 			</button>
 		</div>
@@ -65,7 +71,8 @@
 
 {#if showWaitingRequestVerificationDialog}
 	<WaitingRequestVerificationDialog
-		{deviceInformation}
+		{tokenRequestSocket}
+		{systemInformation}
 		onClose={handleDialogClose}
 	/>
 {/if}
