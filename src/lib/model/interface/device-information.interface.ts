@@ -5,6 +5,6 @@ export interface DeviceInformation {
 	hostname?: string;
 	locale?: string;
 	platform?: string;
-	type?: string;
 	version?: string;
+	username?: string;
 }

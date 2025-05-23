@@ -4,7 +4,6 @@
 	import '../app.css';
 	import { createDatabase } from '$lib/util/tauri/sql.util';
 	import { getAppDataDir } from '$lib/store/startup/get.startup.svelte';
-	import { listen_to_app_updates } from '$lib/util/tauri/updater.util';
 
 	let { children } = $props();
 
@@ -21,8 +20,6 @@
 
 		// Util / Tauri /Http
 
-		// Util / Tauri / Updater
-		await listen_to_app_updates();
 	});
 </script>
 

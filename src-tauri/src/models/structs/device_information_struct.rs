@@ -8,6 +8,6 @@ pub struct DeviceInformation<'a> {
     pub hostname: String,
     pub locale: Option<String>,
     pub platform: &'a str,
-    pub type_: String,
     pub version: String,
+    pub username: String,
 }

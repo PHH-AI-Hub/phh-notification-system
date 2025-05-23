@@ -13,7 +13,9 @@
 	let identifierKeyChip: string[] = $state([]);
 
 	onMount(() => {
-		identifierKey = CryptoJS.lib.WordArray.random(32).toString();
+		identifierKey = CryptoJS.SHA256(deviceInformation.hostname).toString(
+			CryptoJS.enc.Hex
+		);
 		identifierKeyChip = splitIdentifierKey(identifierKey);
 		sendDeviceVerificationRequest(identifierKey);
 		countDownAbortRequest();
@@ -83,17 +85,23 @@
 								<!-- row 2 -->
 								<tr>
 									<th>2</th>
+									<td>Username</td>
+									<td>{deviceInformation.username}</td>
+								</tr>
+
+								<tr>
+									<th>3</th>
 									<td>Hostname</td>
 									<td>{deviceInformation.hostname}</td>
 								</tr>
 								<!-- row 3 -->
 								<tr>
-									<th>3</th>
+									<th>4</th>
 									<td>Family</td>
 									<td>{deviceInformation.family}</td>
 								</tr>
 								<tr>
-									<th>4</th>
+									<th>5</th>
 									<td>Version</td>
 									<td>{deviceInformation.version}</td>
 								</tr>
@@ -102,9 +110,14 @@
 					</div>
 				{/if}
 			</div>
-			<div class="grid grid-cols-4 justify-center gap-5">
-				{#each identifierKeyChip as chip}
-					<span class="badge badge-accent h-10 w-48 text-2xl">{chip}</span>
+			<div class="grid grid-cols-4 justify-center gap-5 px-5">
+				{#each identifierKeyChip as chip, index}
+					<div class="indicator">
+						<span class="indicator-item indicator-start badge badge-secondary">
+							{index + 1}
+						</span>
+						<div class="badge badge-accent h-10 w-48 text-2xl">{chip}</div>
+					</div>
 				{/each}
 			</div>
 		</div>

@@ -1,7 +1,7 @@
 use modules::{
     informations::{
         application_information::get_application_version,
-        device_information::get_device_information,
+        device_information::get_device_information, system_information::get_system_information,
     },
     updaters::latest_version_updater::update_to_latest_version,
     windows::{
@@ -13,8 +13,6 @@ pub mod models;
 pub mod modules;
 
 use tauri::{Manager, WindowEvent};
-use tauri_plugin_global_shortcut::ShortcutState;
-use tauri_plugin_updater::UpdaterExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -111,6 +109,7 @@ pub fn run() {
             // Informations
             get_application_version,
             get_device_information,
+            get_system_information,
             // Windows
             focus_window,
             hide_window,
